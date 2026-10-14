@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Methodology | My Poker Gym</title>
+<meta name="description" content="How My Poker Gym models the game, grades decisions and does the math, from combinatorics to equity and pot odds.">
+<meta name="theme-color" content="#0a0c0f">
+<link rel="icon" href="../assets/mark.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300..800&display=swap" rel="stylesheet">
+<style>
+:root{--font:'Manrope',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;--bg:#0a0c0f;--panel:#12161b;--line:rgba(239,233,221,.08);--line-2:rgba(239,233,221,.14);--ink:#efe9dd;--body:#c9c4ba;--muted:#9ca3ad;--dim:#6d747e;--brass:#d2a95b;--brass-2:#e8c88a;--brass-ink:#1b1408;color-scheme:dark}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:calc(90px + env(safe-area-inset-top,0px));background:var(--bg);scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--body);font-family:var(--font);font-size:16.5px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--brass)}a:hover{color:var(--brass-2)}
+:focus-visible{outline:2px solid var(--brass);outline-offset:3px}
+.wrap{max-width:1200px;margin:0 auto;padding:0 24px}
+.nav{position:sticky;top:0;z-index:10;background:rgba(10,12,15,.86);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;align-items:center;justify-content:space-between;height:72px;gap:16px}
+.logo{display:flex;align-items:center;gap:11px;text-decoration:none;color:var(--ink);font-weight:700;font-size:20px;letter-spacing:-.03em}
+.logo-mark{width:30px;height:30px;display:block;flex:none}.logo-mark svg{width:100%;height:100%;display:block}
+.nav-links{display:flex;align-items:center;gap:26px;font-size:15px;font-weight:600}
+.nav-links a{color:var(--muted);text-decoration:none;transition:color .15s}
+.nav-links a:hover{color:var(--ink)}
+.btn{display:inline-flex;align-items:center;gap:8px;border-radius:8px;padding:10px 18px;font-weight:700;text-decoration:none;white-space:nowrap}
+.btn.gold,.nav-links .btn.gold{background:linear-gradient(180deg,var(--brass-2),var(--brass));color:var(--brass-ink)}
+.nav-links .btn.gold:hover{color:var(--brass-ink)}
+main{padding:64px 0 96px}
+.doc{max-width:720px;margin:0 auto}
+.doc h1{color:var(--ink);font-size:clamp(32px,4.4vw,46px);line-height:1.08;letter-spacing:-.035em;font-weight:600;margin:0 0 10px}
+.doc .updated{color:var(--dim);font-size:14px;margin:0 0 30px}
+.doc .intro{font-size:19px;line-height:1.6;color:var(--ink);opacity:.92;margin:0 0 26px}
+.doc h2{color:var(--ink);font-size:22px;letter-spacing:-.02em;font-weight:650;margin:52px 0 14px;padding-top:26px;border-top:1px solid var(--line)}
+.doc h3{color:var(--ink);font-size:17.5px;font-weight:650;margin:30px 0 10px}
+.doc p{margin:0 0 16px}
+.doc ul{margin:0 0 18px;padding-left:22px}
+.doc li{margin:0 0 9px}
+.doc li::marker{color:var(--dim)}
+.doc ul ul{margin:9px 0 4px}
+.doc .lead{color:var(--ink);font-weight:600}
+.doc .caps{letter-spacing:.01em;font-size:14.5px;line-height:1.75}
+.tablewrap{overflow-x:auto;margin:6px 0 22px;border:1px solid var(--line-2);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:15px;min-width:520px;font-variant-numeric:tabular-nums}
+th{text-align:left;color:var(--ink);font-weight:600;padding:12px 16px;background:var(--panel);border-bottom:1px solid var(--line-2)}
+td{padding:12px 16px;border-top:1px solid var(--line);vertical-align:top}
+tbody tr:first-child td{border-top:0}
+math{color:var(--ink);font-size:1.08em}
+.mw{margin:14px 0 20px;padding:16px 18px;background:var(--panel);border:1px solid var(--line-2);border-radius:8px;overflow-x:auto;max-width:100%}
+.mw math{display:block}
+html,body{overflow-x:clip}
+.other{margin-top:56px;padding-top:24px;border-top:1px solid var(--line);font-size:15px}
+@media (max-width:560px){table{min-width:0}thead{display:none}tbody tr{display:block;padding:12px 16px;border-top:1px solid var(--line)}tbody tr:first-child{border-top:0}td{display:block;border:0;padding:2px 0 8px}td::before{content:attr(data-label);display:block;color:var(--dim);font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:2px}}
+/* methodology layout */
+.with-toc{display:grid;grid-template-columns:220px minmax(0,720px);gap:56px;justify-content:center;align-items:start}
+.with-toc .doc{margin:0}
+.toc{position:sticky;top:96px;font-size:14px;line-height:1.45;max-height:calc(100vh - 120px);overflow:auto;padding-right:6px}
+.toc p{color:var(--ink);font-weight:650;margin:0 0 10px;font-size:13px;letter-spacing:.06em;text-transform:uppercase}
+.toc ol{list-style:none;margin:0;padding:0;counter-reset:t}
+.toc li{margin:0 0 8px}
+.toc a{color:var(--muted);text-decoration:none;display:block;border-left:2px solid transparent;padding-left:10px;transition:color .15s,border-color .15s}
+.toc a:hover{color:var(--ink)}
+.toc a.on{color:var(--ink);border-left-color:var(--brass)}
+@media (max-width:980px){.with-toc{grid-template-columns:1fr}.toc{display:none}}
+/* about */
+.facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:34px 0 34px}
+@media (max-width:620px){.facts{grid-template-columns:1fr}}
+.fact{position:relative;background:var(--panel);border:1px solid var(--line-2);border-radius:12px;padding:18px 18px 16px;display:flex;flex-direction:column;gap:4px;min-height:96px}
+.fact-k{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);font-weight:600}
+.fact-v{font-size:18px;color:var(--ink);font-weight:600;letter-spacing:-.01em}
+.fact.dog{padding-right:84px}
+.dog-art{position:absolute;right:14px;top:50%;width:56px;height:56px;transform:translateY(-50%)}
+.dog-art svg{width:100%;height:100%;display:block}
+.signoff{color:var(--ink);font-weight:600;margin-top:22px!important}
+.cta-line{display:flex;gap:22px;align-items:center;flex-wrap:wrap;margin-top:34px!important}
+.cta-line .btn{padding:13px 22px}
+.txtlink{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--line-2);padding-bottom:2px;font-weight:600}
+.txtlink:hover{color:var(--brass-2)}
+@media (prefers-reduced-motion:no-preference){.dog.fact:hover .dog-art{animation:wag .6s ease-in-out 2}}
+@keyframes wag{0%,100%{transform:translateY(-50%) rotate(0)}25%{transform:translateY(-50%) rotate(-8deg)}75%{transform:translateY(-50%) rotate(8deg)}}
+.site-footer{border-top:1px solid var(--line);color:var(--muted);font-size:13.5px;line-height:1.5}
+.site-footer .fwrap{display:flex;align-items:center;gap:12px 28px;flex-wrap:wrap;padding-top:26px;padding-bottom:40px}
+.site-footer .flogo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font-weight:700;font-size:16px;letter-spacing:-.02em;white-space:nowrap}
+.site-footer .flogo span{width:22px;height:22px;display:block;flex:none}
+.site-footer .flogo svg{width:100%;height:100%;display:block}
+.site-footer .ftag{flex:1;min-width:240px;opacity:.85}
+.site-footer .flegal{display:flex;gap:8px 20px;flex-wrap:wrap}
+.site-footer .flegal a{color:var(--muted);text-decoration:none}
+.site-footer .flegal a:hover{color:var(--ink)}
+@media (max-width:640px){.site-footer .fwrap{flex-direction:column;align-items:flex-start;gap:12px}.site-footer .ftag{min-width:0}}
+.nav-links a[aria-current="page"]{color:var(--ink)}
+.logo-text{white-space:nowrap}
+@media (max-width:460px){.logo-text{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}.nav-links{gap:16px!important;font-size:14px}}
+</style>
+</head>
+<body>
+<header class="nav" id="nav">
+  <div class="wrap">
+    <a class="logo" href="../" aria-label="My Poker Gym home"><span class="logo-mark" aria-hidden="true"><svg class="mpg-mark" viewBox="0 0 100 100" role="img" aria-label="My Poker Gym"><defs><linearGradient id="mpgGnav" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ecd096"/><stop offset="1" stop-color="#c49a4c"/></linearGradient></defs><circle cx="50" cy="50" r="49" fill="url(#mpgGnav)"/><rect x="45.5" y="2.6" width="9" height="11" rx="1.6" fill="#fbf3df" transform="rotate(0 50 50)"/><rect x="45.5" y="2.6" width="9" height="11" rx="1.6" fill="#fbf3df" transform="rotate(45 50 50)"/><rect x="45.5" y="2.6" width="9" height="11" rx="1.6" fill="#fbf3df" transform="rotate(90 50 50)"/><rect x="45.5" y="2.6" width="9" height="11" rx="1.6" fill="#fbf3df" transform="rotate(135 50 50)"/><rect x="45.5" y="2.6" width="9" height="11" rx="1.6" fill="#fbf3df" transform="rotate(180 50 50)"/><rect x="45.5" y="2.6" width="9" height="11" rx="1.6" fill="#fbf3df" transform="rotate(225 50 50)"/><rect x="45.5" y="2.6" width="9" height="11" rx="1.6" fill="#fbf3df" transform="rotate(270 50 50)"/><rect x="45.5" y="2.6" width="9" height="11" rx="1.6" fill="#fbf3df" transform="rotate(315 50 50)"/><circle cx="50" cy="50" r="35.5" fill="none" stroke="#1a1408" stroke-opacity=".55" stroke-width="1.4" stroke-dasharray="2.2 2.6"/><g transform="translate(50 51) scale(.52) translate(-50 -52)"><path d="M26.5 53 C20.5 41 21 25 32 18 Q50 7.5 68 18 C79 25 79.5 41 73.5 53" fill="none" stroke="#1a1408" stroke-width="10" stroke-linecap="round"/><path d="M50 35 C67.5 35 80.5 48.5 80.5 64.5 C80.5 73 77 80.5 71 86 L69 89.5 H31 L29 86 C23 80.5 19.5 73 19.5 64.5 C19.5 48.5 32.5 35 50 35Z" fill="#1a1408"/><g transform="translate(50 65.5) scale(.43) translate(-50 -61)"><path d="M50 30 C57 41 81 50 81 66.5 C81 78 69.5 84 60.5 79 C57 77 54.6 74.4 53.4 71.6 C54 80 57 87 62.5 92 H37.5 C43 87 46 80 46.6 71.6 C45.4 74.4 43 77 39.5 79 C30.5 84 19 78 19 66.5 C19 50 43 41 50 30Z" fill="url(#mpgGnav)"/></g></g></svg></span><span class="logo-text">My Poker Gym</span></a>
+    <nav class="nav-links" aria-label="Main">
+      <a href="../methodology/" aria-current="page">Methodology</a>
+      <a href="../about/">About Us</a>
+      <a class="btn gold" href="../train/">Train</a>
+    </nav>
+  </div>
+</header>
+<main>
+  <div class="wrap">
+<div class="with-toc"><nav class="toc" aria-label="On this page"><p>On this page</p><ol><li><a href="#game">1. The game we model</a></li><li><a href="#combos">2. Hands, combinations and ranges</a></li><li><a href="#charts">3. Preflop strategy charts</a></li><li><a href="#grading">4. Grading: correct, acceptable and mistake</a></li><li><a href="#types">5. The six player types</a></li><li><a href="#ranking">6. Ranking the 169 starting hands</a></li><li><a href="#preflop-actions">7. How opponents choose preflop actions</a></li><li><a href="#bayes">8. Reading ranges with Bayes' rule</a></li><li><a href="#classify">9. Classifying hands after the flop</a></li><li><a href="#postflop-play">10. How opponents play after the flop</a></li><li><a href="#equity">11. Equity</a></li><li><a href="#pot-odds">12. Pot odds and the price of a call</a></li><li><a href="#outs">13. Outs and the rule of 2 and 4</a></li><li><a href="#decisions">14. Turning the numbers into a decision</a></li><li><a href="#sizing">15. Bet sizing and board texture</a></li><li><a href="#quizzes">16. Your equity and range guesses</a></li><li><a href="#limits">17. What this model does not do</a></li></ol></nav>
+<article class="doc">
+<h1>Methodology</h1>
+<p class="updated">How My Poker Gym models the game, grades your decisions and does the math.</p>
+<p class="intro">This page explains every calculation behind the trainer, from how starting hands are counted to how an opponent's range narrows as they act. Where the trainer uses a number, the number is here. Where it uses a simplification, we say so.</p>
+
+<h2 id="game">1. The game we model</h2>
+<p>Every hand is nine-handed no-limit hold'em with $1 and $2 blinds. You start each hand with $300, which is 150 big blinds. Opponents keep their stacks from hand to hand, so they can be shorter or deeper than you.</p>
+<p>Seats are named by position, in the order they act before the flop: UTG, UTG+1, MP, LJ, HJ, CO, BTN, SB and BB. After the flop, the small blind acts first and the button acts last. Acting later is an advantage, because you see what everyone else did before you decide.</p>
+<p>The trainer uses fixed bet sizes so that every spot is comparable:</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Situation</th><th>Size</th></tr></thead>
+<tbody>
+<tr><td data-label="Situation">Open raise</td><td data-label="Size">$6 (3 big blinds)</td></tr>
+<tr><td data-label="Situation">Raise over limpers</td><td data-label="Size">$10, plus $2 per extra limper, plus $2 from the blinds</td></tr>
+<tr><td data-label="Situation">3-bet</td><td data-label="Size">3 times the raise in position, 4 times from the blinds, plus one raise for each caller</td></tr>
+<tr><td data-label="Situation">4-bet</td><td data-label="Size">2.3 times the 3-bet</td></tr>
+<tr><td data-label="Situation">5-bet</td><td data-label="Size">All-in</td></tr>
+<tr><td data-label="Situation">Postflop bets</td><td data-label="Size">One third of the pot or three quarters of the pot</td></tr>
+<tr><td data-label="Situation">Postflop raises</td><td data-label="Size">3 times the bet</td></tr>
+</tbody></table></div>
+<p>Before the flop, any raise that would put in at least 45% of a player's stack becomes an all-in instead. After the flop, the same happens to a raise of 60% or more of the stack, or a bet of 85% or more. A player committing that much cannot sensibly fold to a reraise.</p>
+
+<h2 id="combos">2. Hands, combinations and ranges</h2>
+<p>A standard deck makes 1,326 different two-card starting hands:</p>
+<div class="mw"><math display="block"><mrow><mrow><mo>(</mo><mfrac linethickness="0"><mn>52</mn><mn>2</mn></mfrac><mo>)</mo></mrow><mo>=</mo><mfrac><mrow><mn>52</mn><mo>×</mo><mn>51</mn></mrow><mn>2</mn></mfrac><mo>=</mo><mn>1326</mn></mrow></math></div>
+<p>Many of these play identically, so they are grouped into 169 hand classes. Each class contains a fixed number of combinations:</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Class</th><th>Example</th><th>Combinations</th><th>Classes</th><th>Total</th></tr></thead>
+<tbody>
+<tr><td data-label="Class">Pair</td><td data-label="Example">88</td><td data-label="Combinations">6</td><td data-label="Classes">13</td><td data-label="Total">78</td></tr>
+<tr><td data-label="Class">Suited</td><td data-label="Example">AKs</td><td data-label="Combinations">4</td><td data-label="Classes">78</td><td data-label="Total">312</td></tr>
+<tr><td data-label="Class">Offsuit</td><td data-label="Example">AKo</td><td data-label="Combinations">12</td><td data-label="Classes">78</td><td data-label="Total">936</td></tr>
+</tbody></table></div>
+<p>A range is the set of hands a player could hold, with a weight for each. When we say a range is 20% of hands, we mean its weighted combinations divided by 1,326:</p>
+<div class="mw"><math display="block"><mrow><mtext>width</mtext><mo>=</mo><mfrac><mrow><munder><mo>∑</mo><mi>h</mi></munder><msub><mi>w</mi><mi>h</mi></msub><mo>·</mo><msub><mi>c</mi><mi>h</mi></msub></mrow><mn>1326</mn></mfrac></mrow></math></div>
+<p>Here <i>w<sub>h</sub></i> is the weight of hand class <i>h</i>, from 0 to 1, and <i>c<sub>h</sub></i> is its number of combinations. Card removal is applied throughout: combinations that use a card in your hand or on the board are removed from every opponent's range.</p>
+
+<h2 id="charts">3. Preflop strategy charts</h2>
+<p>Your preflop decisions are graded against charts modeled on solver output for nine-handed play at 100 to 150 big blinds. The trainer does not run a solver itself. The charts encode the shape of a solver's strategy: which hands raise, which call, which fold, and which are mixed between two actions.</p>
+<p>When the action folds to you, these are the opening ranges:</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Position</th><th>UTG</th><th>UTG+1</th><th>MP</th><th>LJ</th><th>HJ</th><th>CO</th><th>BTN</th><th>SB</th></tr></thead>
+<tbody><tr><td data-label="Position">Opens</td><td data-label="UTG">10.2%</td><td data-label="UTG+1">13.8%</td><td data-label="MP">17.4%</td><td data-label="LJ">21.9%</td><td data-label="HJ">26.9%</td><td data-label="CO">39.9%</td><td data-label="BTN">56.9%</td><td data-label="SB">43.8%</td></tr></tbody>
+</table></div>
+<p>The pattern follows from one idea: the more players left to act behind you, the more likely someone holds a strong hand, so the tighter you open. The small blind plays a raise-or-fold strategy, which is a common simplification of more complex solver lines that also limp.</p>
+<p>When someone has already raised, the chart depends on who raised and where you sit. Some examples, measured as a share of all hands:</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Spot</th><th>3-bet</th><th>Call</th><th>Continue</th></tr></thead>
+<tbody>
+<tr><td data-label="Spot">In position vs an early open</td><td data-label="3-bet">2.9%</td><td data-label="Call">9.0%</td><td data-label="Continue">11.9%</td></tr>
+<tr><td data-label="Spot">In position vs a late open</td><td data-label="3-bet">8.3%</td><td data-label="Call">12.5%</td><td data-label="Continue">20.8%</td></tr>
+<tr><td data-label="Spot">Small blind vs a late open</td><td data-label="3-bet">17.1%</td><td data-label="Call">1.0%</td><td data-label="Continue">18.1%</td></tr>
+<tr><td data-label="Spot">Big blind vs an early open</td><td data-label="3-bet">2.7%</td><td data-label="Call">17.7%</td><td data-label="Continue">20.4%</td></tr>
+<tr><td data-label="Spot">Big blind vs a late open</td><td data-label="3-bet">8.3%</td><td data-label="Call">46.6%</td><td data-label="Continue">54.9%</td></tr>
+<tr><td data-label="Spot">Big blind vs a small blind open</td><td data-label="3-bet">11.8%</td><td data-label="Call">52.1%</td><td data-label="Continue">63.9%</td></tr>
+</tbody></table></div>
+<p>The big blind defends so widely because it has already paid $2 and closes the action. Against a $6 open, calling costs $4 to win a pot of $9 plus the call, so the price is:</p>
+<div class="mw"><math display="block"><mrow><mfrac><mn>4</mn><mrow><mn>9</mn><mo>+</mo><mn>4</mn></mrow></mfrac><mo>≈</mo><mn>30.8</mn><mo>%</mo></mrow></math></div>
+<p>Many hands win more often than that against a wide late-position range.</p>
+<p>Against bigger raises the ranges tighten sharply. Facing a 3-bet after you opened, you continue with about 12.4% of all hands in position and 8.0% out of position. Facing a 4-bet you continue with about 4.4%, and facing an all-in you call with about 3.0%, which is roughly queens or better and ace-king.</p>
+<p>When there are limpers, there is no true solver equilibrium, because solvers almost never open by limping. The trainer uses the standard adjustment instead: raise a tight, strong range to isolate the limper, and from late position limp behind with hands that profit from multiway pots, such as small pairs and suited connectors.</p>
+
+<h2 id="grading">4. Grading: correct, acceptable and mistake</h2>
+<p>Every spot has a primary play, and some spots also have an acceptable alternative. This mirrors how solvers often play a hand two ways at different frequencies, for example raising some of the time and calling the rest.</p>
+<ul>
+<li>Choosing the primary play is graded correct.</li>
+<li>Choosing the alternative in a mixed spot is graded acceptable.</li>
+<li>Anything else is graded a mistake, and you see the explanation before choosing whether to continue with your play or switch.</li>
+</ul>
+<p>Postflop, a decision within 4 points of the break-even equity is treated as close, and both calling and folding are accepted.</p>
+
+<h2 id="types">5. The six player types</h2>
+<p>Every opponent plays one of six styles. Each is defined by how many hands it plays and how aggressively it plays them. The two standard measures are:</p>
+<ul>
+<li><span class="lead">VPIP</span>, voluntarily put money in pot: the share of hands where a player calls or raises before the flop. Posting a blind does not count.</li>
+<li><span class="lead">PFR</span>, preflop raise: the share of hands where a player raises before the flop.</li>
+</ul>
+<div class="tablewrap"><table>
+<thead><tr><th>Type</th><th>How often they appear</th><th>Target VPIP / PFR</th><th>Measured in testing</th></tr></thead>
+<tbody>
+<tr><td data-label="Type">Nit</td><td data-label="How often they appear">18%</td><td data-label="Target VPIP / PFR">12 / 9</td><td data-label="Measured in testing">8 / 7</td></tr>
+<tr><td data-label="Type">Solid regular</td><td data-label="How often they appear">18%</td><td data-label="Target VPIP / PFR">22 / 18</td><td data-label="Measured in testing">20 / 15</td></tr>
+<tr><td data-label="Type">Loose-aggressive</td><td data-label="How often they appear">12%</td><td data-label="Target VPIP / PFR">34 / 27</td><td data-label="Measured in testing">28 / 19</td></tr>
+<tr><td data-label="Type">Maniac</td><td data-label="How often they appear">6%</td><td data-label="Target VPIP / PFR">55 / 40</td><td data-label="Measured in testing">57 / 48</td></tr>
+<tr><td data-label="Type">Calling station</td><td data-label="How often they appear">20%</td><td data-label="Target VPIP / PFR">50 / 5</td><td data-label="Measured in testing">43 / 3</td></tr>
+<tr><td data-label="Type">Loose-passive rec</td><td data-label="How often they appear">26%</td><td data-label="Target VPIP / PFR">34 / 8</td><td data-label="Measured in testing">32 / 6</td></tr>
+</tbody></table></div>
+<p>The measured numbers come from a simulated session of 250 hands. They differ from the targets because players often face a raise before they can play their full range, and the rarer styles, such as the maniac, appear in fewer hands per test, so their numbers move more.</p>
+<p>Opponents sit down as strangers. Their VPIP and PFR on your screen are counted only from hands you have watched, and the range-reading quiz on a player unlocks after 15 hands, so you have to earn your reads the same way you would at a real table.</p>
+
+<h2 id="ranking">6. Ranking the 169 starting hands</h2>
+<p>To build ranges for the five non-chart styles, the trainer needs every starting hand in order from best to worst. Each hand class is scored by its equity against one random hand, estimated from 20,000 simulated deals, plus small bonuses for playability:</p>
+<div class="mw"><math display="block"><mrow><mtext>score</mtext><mo>=</mo><msub><mi>E</mi><mtext>random</mtext></msub><mo>+</mo><mn>0.03</mn><mo>·</mo><mtext>suited</mtext><mo>+</mo><mn>0.025</mn><mo>·</mo><mtext>pair</mtext><mo>+</mo><mtext>connector bonus</mtext></mrow></math></div>
+<p>The connector bonus is up to 5 points for suited connectors such as 87s, smaller for hands with one or two gaps, and less than half as much for offsuit connectors. These bonuses reflect that suited and connected hands make straights and flushes, which win bigger pots than their raw equity suggests.</p>
+<p>Sorting by score and adding up combinations gives every hand a percentile <i>p</i>, its position in the ranking from 0 (best) to 1 (worst). Some reference points:</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Hand</th><th>Equity vs a random hand</th><th>Percentile</th></tr></thead>
+<tbody>
+<tr><td data-label="Hand">AA</td><td data-label="Equity vs a random hand">85.3%</td><td data-label="Percentile">0.2%</td></tr>
+<tr><td data-label="Hand">AKs</td><td data-label="Equity vs a random hand">67.0%</td><td data-label="Percentile">2.9%</td></tr>
+<tr><td data-label="Hand">QJs</td><td data-label="Equity vs a random hand">61.0%</td><td data-label="Percentile">5.6%</td></tr>
+<tr><td data-label="Hand">T9s</td><td data-label="Equity vs a random hand">53.9%</td><td data-label="Percentile">17.0%</td></tr>
+<tr><td data-label="Hand">98s</td><td data-label="Equity vs a random hand">50.7%</td><td data-label="Percentile">28.1%</td></tr>
+<tr><td data-label="Hand">22</td><td data-label="Equity vs a random hand">49.7%</td><td data-label="Percentile">44.9%</td></tr>
+<tr><td data-label="Hand">72o</td><td data-label="Equity vs a random hand">34.3%</td><td data-label="Percentile">96.8%</td></tr>
+</tbody></table></div>
+
+<h2 id="preflop-actions">7. How opponents choose preflop actions</h2>
+<p>Solid regulars use the same charts you are graded against, with one adjustment described below. The other five styles use thresholds on the ranking. A nit in the cutoff, for example, raises the top 11% of hands. A calling station facing a raise calls with the top 42% and 3-bets only the top 2%.</p>
+<p>Hard cutoffs would make every opponent perfectly predictable, so each threshold <i>T</i> is softened over a band of plus or minus 15%. The chance that a hand at percentile <i>p</i> takes the action is:</p>
+<div class="mw"><math display="block"><mrow><mi>w</mi><mo>(</mo><mi>p</mi><mo>,</mo><mi>T</mi><mo>)</mo><mo>=</mo><mrow><mo>{</mo><mtable columnalign="left"><mtr><mtd><mn>1</mn></mtd><mtd><mtext>if </mtext><mi>p</mi><mo>≤</mo><mn>0.85</mn><mi>T</mi></mtd></mtr><mtr><mtd><mfrac><mrow><mn>1.15</mn><mi>T</mi><mo>−</mo><mi>p</mi></mrow><mrow><mn>0.3</mn><mi>T</mi></mrow></mfrac></mtd><mtd><mtext>if </mtext><mn>0.85</mn><mi>T</mi><mo>&lt;</mo><mi>p</mi><mo>&lt;</mo><mn>1.15</mn><mi>T</mi></mtd></mtr><mtr><mtd><mn>0</mn></mtd><mtd><mtext>if </mtext><mi>p</mi><mo>≥</mo><mn>1.15</mn><mi>T</mi></mtd></mtr></mtable></mrow></mrow></math></div>
+<p>With a raise threshold <i>R</i> and a continue threshold <i>C</i>, a hand raises with probability <i>w</i>(<i>p</i>, <i>R</i>), calls with probability max(<i>w</i>(<i>p</i>, <i>C</i>), <i>w</i>(<i>p</i>, <i>R</i>)) minus that, and folds otherwise. In a mixed spot on the charts, the primary action is chosen 55% of the time and the alternative 45%.</p>
+<p>The recommended play also adapts to who raised. A raise from a nit, a calling station or a loose-passive player is treated like an under-the-gun open, because those players rarely raise without a strong hand. A raise from a maniac or loose-aggressive player is treated like a late-position open, because their range is much wider. This is why the same hand can be a fold against one opener and a 3-bet against another.</p>
+
+<h2 id="bayes">8. Reading ranges with Bayes' rule</h2>
+<p>Every opponent starts each hand with all 169 hand classes at full weight. Each time they act, their range is updated with Bayes' rule. The new weight of a hand is its old weight times the probability that a player holding it would have taken the action they took:</p>
+<div class="mw"><math display="block"><mrow><msub><mi>w</mi><mtext>new</mtext></msub><mo>(</mo><mi>h</mi><mo>)</mo><mo>=</mo><msub><mi>w</mi><mtext>old</mtext></msub><mo>(</mo><mi>h</mi><mo>)</mo><mo>·</mo><mi>P</mi><mo>(</mo><mtext>action</mtext><mo>∣</mo><mi>h</mi><mo>,</mo><mtext>situation</mtext><mo>)</mo></mrow></math></div>
+<p>This uses exactly the same probabilities the opponent used to choose their action, so the range you see is the true distribution of what they could hold. Hands they would never play this way drop to zero, and hands they would only sometimes play keep part of their weight.</p>
+<p>For example, if a nit raises first in from under the gun, every hand outside roughly the top 6 to 7% of the ranking falls to zero weight, and the hands near the edge are partly weighted. If the same nit then calls a 3-bet, their range narrows again to the hands that would make that call.</p>
+<p>After the flop, the same update runs on every bet, call, check and raise, using the postflop probabilities in section 10.</p>
+
+<h2 id="classify">9. Classifying hands after the flop</h2>
+<p>Postflop, every hand in a range is placed into one of five groups, based on its best five-card hand and its draws:</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Group</th><th>Includes</th></tr></thead>
+<tbody>
+<tr><td data-label="Group">Very strong</td><td data-label="Includes">Sets, two pair using both hole cards, straights and flushes that are close to the best possible, full houses and better</td></tr>
+<tr><td data-label="Group">Strong</td><td data-label="Includes">Overpairs, top pair with a good kicker, weaker flushes and straights, one pair with a strong draw</td></tr>
+<tr><td data-label="Group">Medium</td><td data-label="Includes">Top pair with a weak kicker, middle and bottom pair, pocket pairs below the top card</td></tr>
+<tr><td data-label="Group">Draws</td><td data-label="Includes">Flush draws and open-ended straight draws without a pair</td></tr>
+<tr><td data-label="Group">Air</td><td data-label="Includes">Everything else, including gutshots, overcards and hands that only play the board</td></tr>
+</tbody></table></div>
+<p>Hands are moved down a group when the board makes them vulnerable. For example, top pair is treated as medium rather than strong when four cards to a flush or straight are on the board. On the river, unfinished draws count as air.</p>
+
+<h2 id="postflop-play">10. How opponents play after the flop</h2>
+<p>An opponent's postflop action is drawn from a probability table based on their hand group. These are the base probabilities for a preflop raiser on the flop:</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Group</th><th>Checked to them: bet</th><th>Facing a small bet: fold / call / raise</th><th>Facing a big bet: fold / call / raise</th><th>Facing a raise: fold / call / raise</th></tr></thead>
+<tbody>
+<tr><td data-label="Group">Very strong</td><td data-label="Checked to them: bet">80%</td><td data-label="Facing a small bet">0 / 55 / 45</td><td data-label="Facing a big bet">0 / 55 / 45</td><td data-label="Facing a raise">0 / 50 / 50</td></tr>
+<tr><td data-label="Group">Strong</td><td data-label="Checked to them: bet">62%</td><td data-label="Facing a small bet">5 / 85 / 10</td><td data-label="Facing a big bet">15 / 75 / 10</td><td data-label="Facing a raise">45 / 55 / 0</td></tr>
+<tr><td data-label="Group">Medium</td><td data-label="Checked to them: bet">28%</td><td data-label="Facing a small bet">28 / 72 / 0</td><td data-label="Facing a big bet">55 / 45 / 0</td><td data-label="Facing a raise">80 / 20 / 0</td></tr>
+<tr><td data-label="Group">Draws</td><td data-label="Checked to them: bet">55%</td><td data-label="Facing a small bet">13 / 72 / 15</td><td data-label="Facing a big bet">13 / 72 / 15</td><td data-label="Facing a raise">50 / 50 / 0</td></tr>
+<tr><td data-label="Group">Air</td><td data-label="Checked to them: bet">32%</td><td data-label="Facing a small bet">86 / 7 / 7</td><td data-label="Facing a big bet">86 / 7 / 7</td><td data-label="Facing a raise">97 / 3 / 0</td></tr>
+</tbody></table></div>
+<p>A big bet is anything of at least 60% of the pot. When betting, strong made hands and draws favor the big size, and medium hands favor the small size. A player who did not raise preflop bets much less often when acting first, at 35% of the rates above, or 75% when the player before them checked.</p>
+<p>Each style then scales these numbers:</p>
+<ul>
+<li><span class="lead">Nit:</span> bets weak hands at 35% of the base rate, folds non-strong hands 60% more often, and almost never bluff-raises.</li>
+<li><span class="lead">Calling station:</span> bets less, folds at 30% of the base rate so it calls far more, and rarely raises. Weak hands call three times as often.</li>
+<li><span class="lead">Loose-passive rec:</span> bets less, folds at 55% of the base rate and raises less.</li>
+<li><span class="lead">Loose-aggressive:</span> raises 50% more often and bluffs 50% more often.</li>
+<li><span class="lead">Maniac:</span> bluffs 2.4 times as often, raises 2.2 times as often and folds less.</li>
+</ul>
+<p>In multiway pots, every style bluffs about half as often, because a bluff has to get through more than one player.</p>
+
+<h2 id="equity">11. Equity</h2>
+<p>Your equity is the share of the pot you would win on average if all remaining cards were dealt with no more betting. Ties count as half a win in a heads-up pot, and as a split among all tied players in a multiway pot.</p>
+<p>On the flop and turn, the trainer estimates equity by simulation. Each trial draws a hand for every opponent from their weighted range, removes any conflicting cards, deals the remaining board cards at random and compares the final hands. With <i>N</i> trials:</p>
+<div class="mw"><math display="block"><mrow><mi>E</mi><mo>≈</mo><mfrac><mn>1</mn><mi>N</mi></mfrac><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>N</mi></munderover><msub><mtext>share won</mtext><mi>i</mi></msub></mrow></math></div>
+<p>The trainer uses about 1,500 trials per decision. The standard error of a simulated equity is:</p>
+<div class="mw"><math display="block"><mrow><mtext>SE</mtext><mo>=</mo><msqrt><mfrac><mrow><mi>E</mi><mo>(</mo><mn>1</mn><mo>−</mo><mi>E</mi><mo>)</mo></mrow><mi>N</mi></mfrac></msqrt><mo>≤</mo><msqrt><mfrac><mn>0.25</mn><mn>1500</mn></mfrac></msqrt><mo>≈</mo><mn>1.3</mn><mo>%</mo></mrow></math></div>
+<p>So a displayed equity is within about 2.6 points of the exact value 95% of the time. Heads-up on the river, no cards remain to be dealt, so equity is calculated exactly by comparing your hand with every combination in the opponent's range.</p>
+<p>The explanations break equity into the five hand groups from section 9. If <i>s<sub>g</sub></i> is the share of the opponent's range in group <i>g</i> and <i>v<sub>g</sub></i> is how often you win against that group:</p>
+<div class="mw"><math display="block"><mrow><mi>E</mi><mo>=</mo><munder><mo>∑</mo><mi>g</mi></munder><msub><mi>s</mi><mi>g</mi></msub><mo>·</mo><msub><mi>v</mi><mi>g</mi></msub></mrow></math></div>
+<p>For example, if 27% of a range is air that you beat 94% of the time, that group contributes 0.27 × 0.94 ≈ 25.4 points to your equity.</p>
+<p>Against several opponents, you have to beat all of them. A quick estimate is the product of your equity against each one alone:</p>
+<div class="mw"><math display="block"><mrow><msub><mi>E</mi><mtext>field</mtext></msub><mo>≈</mo><munder><mo>∏</mo><mi>j</mi></munder><msub><mi>E</mi><mi>j</mi></msub></mrow></math></div>
+<p>This estimate usually runs low, because opponents' hands are not independent. When one misses the board, the others often miss too. The trainer always shows the simulated value, which accounts for this.</p>
+
+<h2 id="pot-odds">12. Pot odds and the price of a call</h2>
+<p>Calling a bet is profitable when your equity is higher than the share of the final pot you have to put in. If the pot is <i>P</i> after the bet and calling costs <i>C</i>:</p>
+<div class="mw"><math display="block"><mrow><msub><mi>E</mi><mtext>needed</mtext></msub><mo>=</mo><mfrac><mi>C</mi><mrow><mi>P</mi><mo>+</mo><mi>C</mi></mrow></mfrac></mrow></math></div>
+<p>When an opponent bets a fraction <i>b</i> of a pot <i>P</i><sub>0</sub>, the call is <i>bP</i><sub>0</sub> and the pot after the bet is <i>P</i><sub>0</sub>(1 + <i>b</i>), so the requirement depends only on the bet size:</p>
+<div class="mw"><math display="block"><mrow><msub><mi>E</mi><mtext>needed</mtext></msub><mo>=</mo><mfrac><mrow><mi>b</mi><msub><mi>P</mi><mn>0</mn></msub></mrow><mrow><msub><mi>P</mi><mn>0</mn></msub><mo>(</mo><mn>1</mn><mo>+</mo><mi>b</mi><mo>)</mo><mo>+</mo><mi>b</mi><msub><mi>P</mi><mn>0</mn></msub></mrow></mfrac><mo>=</mo><mfrac><mi>b</mi><mrow><mn>1</mn><mo>+</mo><mn>2</mn><mi>b</mi></mrow></mfrac></mrow></math></div>
+<div class="tablewrap"><table>
+<thead><tr><th>Bet size</th><th>⅓ pot</th><th>½ pot</th><th>⅔ pot</th><th>¾ pot</th><th>Pot</th><th>2 × pot</th></tr></thead>
+<tbody><tr><td data-label="Bet size">Equity needed</td><td data-label="⅓ pot">20.0%</td><td data-label="½ pot">25.0%</td><td data-label="⅔ pot">28.6%</td><td data-label="¾ pot">30.0%</td><td data-label="Pot">33.3%</td><td data-label="2 × pot">40.0%</td></tr></tbody>
+</table></div>
+<p>Pure pot odds assume the hand ends after your call. Draws can win more on later streets when they hit, so the trainer gives them an implied-odds allowance: 8 points on the flop, 5 points on the turn and none on the river, plus 3 more points when a calling station or loose-passive player is in the pot. When players behind you can still raise, the trainer asks for 3 extra points of equity, because your call might not close the action.</p>
+
+<h2 id="outs">13. Outs and the rule of 2 and 4</h2>
+<p>Outs are the unseen cards that improve your hand to the likely winner. After the flop there are 47 unseen cards. The exact chance of hitting at least one of <i>o</i> outs by the river is:</p>
+<div class="mw"><math display="block"><mrow><mi>P</mi><mo>(</mo><mtext>hit by river</mtext><mo>)</mo><mo>=</mo><mn>1</mn><mo>−</mo><mfrac><mrow><mo>(</mo><mn>47</mn><mo>−</mo><mi>o</mi><mo>)</mo><mo>(</mo><mn>46</mn><mo>−</mo><mi>o</mi><mo>)</mo></mrow><mrow><mn>47</mn><mo>×</mo><mn>46</mn></mrow></mfrac></mrow></math></div>
+<p>With one card to come there are 46 unseen cards, so the chance is <i>o</i> / 46. The rule of 2 and 4 approximates these: multiply your outs by 4 on the flop when you will see both cards, or by 2 with one card to come.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Draw</th><th>Outs</th><th>Two cards, exact</th><th>Rule of 4</th><th>One card, exact</th><th>Rule of 2</th></tr></thead>
+<tbody>
+<tr><td data-label="Draw">Gutshot</td><td data-label="Outs">4</td><td data-label="Two cards, exact">16.5%</td><td data-label="Rule of 4">16%</td><td data-label="One card, exact">8.7%</td><td data-label="Rule of 2">8%</td></tr>
+<tr><td data-label="Draw">Open-ended straight draw</td><td data-label="Outs">8</td><td data-label="Two cards, exact">31.5%</td><td data-label="Rule of 4">32%</td><td data-label="One card, exact">17.4%</td><td data-label="Rule of 2">16%</td></tr>
+<tr><td data-label="Draw">Flush draw</td><td data-label="Outs">9</td><td data-label="Two cards, exact">35.0%</td><td data-label="Rule of 4">36%</td><td data-label="One card, exact">19.6%</td><td data-label="Rule of 2">18%</td></tr>
+<tr><td data-label="Draw">Flush draw and gutshot</td><td data-label="Outs">12</td><td data-label="Two cards, exact">45.0%</td><td data-label="Rule of 4">48%</td><td data-label="One card, exact">26.1%</td><td data-label="Rule of 2">24%</td></tr>
+<tr><td data-label="Draw">Flush and straight draw</td><td data-label="Outs">15</td><td data-label="Two cards, exact">54.1%</td><td data-label="Rule of 4">60%</td><td data-label="One card, exact">32.6%</td><td data-label="Rule of 2">30%</td></tr>
+</tbody></table></div>
+<p>The rule overestimates big draws, so with 12 or more outs, shave a few points off. Hitting is also not the same as winning: you can lose after hitting, or win without improving. That is why the trainer shows full equity rather than just the chance to hit.</p>
+
+<h2 id="decisions">14. Turning the numbers into a decision</h2>
+<p>To compare hands fairly between heads-up and multiway pots, the trainer scales your equity by the number of players. With <i>n</i> opponents, your fair share of the pot is 1 / (<i>n</i> + 1), and the scaled equity is:</p>
+<div class="mw"><math display="block"><mrow><msub><mi>E</mi><mtext>rel</mtext></msub><mo>=</mo><mi>E</mi><mo>·</mo><mfrac><mrow><mi>n</mi><mo>+</mo><mn>1</mn></mrow><mn>2</mn></mfrac></mrow></math></div>
+<p>Heads-up this is just your equity. Against three opponents, 40% equity scales to 80%, because 40% is far more than your 25% fair share. The decision rules, in order:</p>
+<ul>
+<li><span class="lead">Value bet</span> with a strong or very strong hand when scaled equity is at least 60% on the flop and turn or 62% on the river. These thresholds drop by 6 points when a calling station or loose-passive player is in the pot, because they call with more worse hands.</li>
+<li><span class="lead">Raise for value</span> when facing a bet with scaled equity of at least 70%, or 80% on the river, or 82% when facing a raise. Against a maniac on the flop or turn, calling is preferred with hands short of very strong, to keep their bluffs in.</li>
+<li><span class="lead">Semi-bluff</span> with a draw when heads-up and either in position or the preflop raiser, unless the opponent is a calling station, who will not fold.</li>
+<li><span class="lead">Check</span> medium-strength hands with scaled equity of at least 38%, because betting them mostly folds out worse and gets called by better.</li>
+<li><span class="lead">Do not bluff</span> into two or more opponents, or into a calling station. Bluff more against nits, who fold too often.</li>
+<li><span class="lead">Facing a bet,</span> call when your equity beats the price from section 12 by more than 4 points, with draws adding their implied-odds allowance. Fold when it falls more than 4 points short, and treat anything within 4 points as close.</li>
+</ul>
+
+<h2 id="sizing">15. Bet sizing and board texture</h2>
+<p>Bet size follows board texture. A flop is wet when it makes many draws possible: three cards of one suit, two of a suit with connected ranks, or three ranks that fit within any five-rank straight window. Anything else is dry.</p>
+<ul>
+<li>On dry boards, value bets are small, a third of the pot, because few worse hands can call a big bet.</li>
+<li>On wet boards, on the turn and river, in multiway pots and against calling stations, value bets are big, three quarters of the pot, because draws and worse made hands will pay.</li>
+<li>As the preflop raiser heads-up on a high, dry flop, such as K-7-2 with three suits, the trainer recommends betting small with most of your range. The raiser holds more overpairs and strong top pairs on these boards, so a cheap bet wins often and is hard to play back at.</li>
+</ul>
+
+<h2 id="quizzes">16. Your equity and range guesses</h2>
+<p>When the equity quiz is on, you choose a 10-point band before acting. If the true equity is inside your band, the guess counts as a hit. Otherwise your miss is the distance in points from the true value to the nearest edge of your band. The Stats tab tracks your hit rate and your average miss. An average miss under 5 points is a good target.</p>
+<p>When the range quiz is on and you have at least 15 hands of reads on a player, you are asked about that player's range. Before the flop you choose a width band: 5% or less, 5 to 12%, 12 to 25%, 25 to 40%, or more than 40%. After the flop you choose what their range is mostly made of. The answer is the largest hand group if it makes up at least 42% of the range, and a balanced mix otherwise. A neighboring band within 2.5 points of the true width, or a group that comes close to the largest, counts as close.</p>
+
+<h2 id="limits">17. What this model does not do</h2>
+<p>My Poker Gym is a training approximation, not a solver. In particular:</p>
+<ul>
+<li>Preflop charts are modeled on published solver strategies, not solved for each exact spot, stack depth or table makeup.</li>
+<li>Postflop recommendations come from equity against modeled ranges plus the rules above. A full solver would also account for future betting on every later street.</li>
+<li>Opponents follow consistent tendencies. Real players change gears, tilt and adjust to you.</li>
+<li>Bet sizes are limited to the fixed options in section 1.</li>
+</ul>
+<p>We think these trade-offs are the right ones for learning. Each answer is fast, consistent and explained, and the lessons transfer to the tables where most players actually play. If you spot something that looks wrong, tell us at <a href="mailto:support@mypokergym.com">support@mypokergym.com</a>.</p>
+
+</article></div>
+  </div>
+</main>
+<footer class="site-footer">
+  <div class="wrap fwrap">
+    <a class="flogo" href="../"><span aria-hidden="true"><svg class="mpg-mark" viewBox="0 0 100 100" role="img" aria-label="My Poker Gym"><defs><linearGradient id="mpgGfoot" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ecd096"/><stop offset="1" stop-color="#c49a4c"/></linearGradient></defs><circle cx="50" cy="50" r="49" fill="url(#mpgGfoot)"/><rect x="45.5" y="2.6" width="9" height="11" rx="1.6" fill="#fbf3df" transform="rotate(0 50 50)"/><rect x="45.5" y="2.6" width="9" height="11" rx="1.6" fill="#fbf3df" transform="rotate(45 50 50)"/><rect x="45.5" y="2.6" width="9" height="11" rx="1.6" fill="#fbf3df" transform="rotate(90 50 50)"/><rect x="45.5" y="2.6" width="9" height="11" rx="1.6" fill="#fbf3df" transform="rotate(135 50 50)"/><rect x="45.5" y="2.6" width="9" height="11" rx="1.6" fill="#fbf3df" transform="rotate(180 50 50)"/><rect x="45.5" y="2.6" width="9" height="11" rx="1.6" fill="#fbf3df" transform="rotate(225 50 50)"/><rect x="45.5" y="2.6" width="9" height="11" rx="1.6" fill="#fbf3df" transform="rotate(270 50 50)"/><rect x="45.5" y="2.6" width="9" height="11" rx="1.6" fill="#fbf3df" transform="rotate(315 50 50)"/><circle cx="50" cy="50" r="35.5" fill="none" stroke="#1a1408" stroke-opacity=".55" stroke-width="1.4" stroke-dasharray="2.2 2.6"/><g transform="translate(50 51) scale(.52) translate(-50 -52)"><path d="M26.5 53 C20.5 41 21 25 32 18 Q50 7.5 68 18 C79 25 79.5 41 73.5 53" fill="none" stroke="#1a1408" stroke-width="10" stroke-linecap="round"/><path d="M50 35 C67.5 35 80.5 48.5 80.5 64.5 C80.5 73 77 80.5 71 86 L69 89.5 H31 L29 86 C23 80.5 19.5 73 19.5 64.5 C19.5 48.5 32.5 35 50 35Z" fill="#1a1408"/><g transform="translate(50 65.5) scale(.43) translate(-50 -61)"><path d="M50 30 C57 41 81 50 81 66.5 C81 78 69.5 84 60.5 79 C57 77 54.6 74.4 53.4 71.6 C54 80 57 87 62.5 92 H37.5 C43 87 46 80 46.6 71.6 C45.4 74.4 43 77 39.5 79 C30.5 84 19 78 19 66.5 C19 50 43 41 50 30Z" fill="url(#mpgGfoot)"/></g></g></svg></span>My Poker Gym</a>
+    <span class="ftag">A practice tool for live $1/$2 no-limit hold'em. No real money is wagered. Play responsibly.</span>
+    <nav class="flegal" aria-label="Site"><a href="../methodology/">Methodology</a><a href="../about/">About Us</a><a href="../terms/">Terms</a><a href="../privacy/">Privacy</a><a href="mailto:support@mypokergym.com">Contact</a></nav>
+  </div>
+</footer>
+<script>
+(function(){const links=[...document.querySelectorAll('.toc a')];const map=new Map(links.map(a=>[a.getAttribute('href').slice(1),a]));
+if(!('IntersectionObserver' in window))return;const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(l=>l.classList.remove('on'));const a=map.get(e.target.id);if(a)a.classList.add('on');}})},{rootMargin:'-20% 0px -70% 0px'});
+document.querySelectorAll('.doc h2[id]').forEach(h=>io.observe(h));})();
+</script>
+</body>
+</html>
