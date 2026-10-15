@@ -1,0 +1,4 @@
+/* Home, Methodology, About, Terms, Privacy */
+.logo .mpg-wordmark{height:22px;width:auto;display:block}
+.site-footer .flogo .mpg-wordmark{height:17px;width:auto;display:block}
+@media (max-width:600px){.logo .mpg-wordmark{height:19px}}

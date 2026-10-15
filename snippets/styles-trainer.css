@@ -1,0 +1,6 @@
+/* train/index.html only: the trainer has light and dark themes, so the logo follows them */
+.brand h1 .mpg-wordmark{height:24px;width:auto;display:block}
+.site-footer .flogo .mpg-wordmark{height:16px;width:auto;display:block}
+@media (max-width:640px){.brand h1 .mpg-wordmark{height:18px}}
+.mpg-wordmark .wm-s,.mpg-wordmark .wm-b{fill:var(--brass)}
+.mpg-wordmark .wm-l{fill:var(--ink)}
